@@ -7,6 +7,7 @@ import base64
 from functools import partial
 
 class Rembg:
+    # TODO: finish preferneces and about section
     def __init__(self, page: ft.Page):
         self.page = page
         self.page.title = "rembg"
@@ -23,14 +24,14 @@ class Rembg:
                                             label="Preferences"),
                 ft.NavigationBarDestination(icon=ft.Icons.QUESTION_MARK,
                                             label="About")
-            ]
+            ],
+            on_change=self.on_nav_change
         )
 
         # appbar (gtk headerbar)
         self.appbar = ft.AppBar(
             center_title=True,
         )
-        
         # this is for loading screen
         self.loading_cons = [ft.Text('Loading rembg...', size=45, 
                                    weight=ft.FontWeight.W_900,
@@ -58,7 +59,7 @@ class Rembg:
                               expand=True,
                               scroll='always'
                               )
-
+        # this is a container, to properely resize contents
         self.coan = ft.Container(expand=True,
                                  content=self.cons,
                                  alignment=ft.alignment.center,
@@ -73,6 +74,8 @@ class Rembg:
             content=self.coan,
         )
 
+        self.about_cons = []
+
         self.page.add(self.pagelet, self.file_picker)
         # this loads the rembg waiting screen
         self.required_threading()
@@ -81,7 +84,10 @@ class Rembg:
         Thread(target=self.rembg_start, daemon=True).start()
         print("Starting rembg thread...")
     def on_page_resize(self, e):
+        # this is for the container
         self.page.update()
+    def on_nav_change(self, e):
+        self.cons.controls.clear()
     def rembg_start(self):
         # import rembg and start a new session
         import rembg
@@ -127,7 +133,11 @@ class Rembg:
 
         buffer = BytesIO(self.outi)
         self.b64_outi = base64.b64encode(buffer.getvalue()).decode()
+        self.extra()
 
+    def extra(self):
+
+        # look at that indentation!
         self.img_cons = [ft.ListTile(title=ft.TextField(label="Filename", 
                                      value=self.name,
                                      ),
@@ -138,7 +148,7 @@ class Rembg:
                                                              text="Copy",
                                                              on_click=partial(self.copy)),
                                             ft.PopupMenuItem(icon=ft.Icons.SAVE,
-                                                             text="Save to storage",
+                                                             text="Save",
                                                              on_click=partial(self.save))
                                         ]
                                      )),
@@ -148,6 +158,17 @@ class Rembg:
                          )]
         self.cons.controls.clear()
         self.cons.controls.extend(self.img_cons)
+
+        self.appbar.leading = ft.IconButton(
+                icon=ft.Icons.ARROW_BACK,
+                tooltip="Go Back to Menu",
+                on_click=partial(self.back)
+            )
+        self.page.update()
+    def back(self, e):
+        self.cons.controls.clear()
+        self.cons.controls.extend(self.main_cons)
+        self.appbar.leading = None
         self.page.update()
     def alertdialog(self, titles, text, actions):
         # this is a wrapper function for the dialog,
@@ -173,20 +194,29 @@ class Rembg:
         self.page.set_clipboard(self.b64_outi)
 
     def save(self, e):
+
+        def save_file(e: ft.FilePickerResultEvent):
+            if e.path:
+                with open(e.path, "wb") as f:
+                    f.write(self.outi)
+                print('file written')
+                diag()
+
+        def diag():
+            self.modal = None
+            self.alertdialog(
+                titles="Saved!",
+                text="Saved to your device as a PNG file.",
+                actions=[ft.TextButton("Ok", on_click=lambda e: self.page.close(self.modal))]
+            )
+
         self.fpicker = ft.FilePicker(on_result=save_file)
 
         self.page.add(self.fpicker)
         self.fpicker.save_file(
-            dialog_title="Save as...",
-            file_name=self.name,
-            allowed_file_extensions=['png']
+                dialog_title="Save as...",
+                file_name=self.name,
         )
-        
-        def save_file(e: ft.FilePickerResultEvent):
-            if e.path:
-                with open(e.path, "wb") as f:
-                    f.write(self.ini)
-                print('file written')
 
 
 def main(page: ft.Page):
