@@ -1,0 +1,15 @@
+[build-system]
+requires = ['flet>=0.28.3']
+build-backend= 'flet'
+
+[project]
+name = 'rembg-flutter'
+version = '1.0.0'
+description = 'Remove a background, now with flutter.'
+dependenices = [
+  'flet==0.28.3',
+  'rembg==0.2.67',
+  'Pillow==10.3.0',
+  'onnxruntime==1.17.1',
+  'certifi==2025.8.3'
+]

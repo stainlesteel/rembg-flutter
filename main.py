@@ -6,8 +6,9 @@ import os
 import base64
 from functools import partial
 
+os.environ['REMBG_HOME'] = ft.app_dir + "/assets/u2net.onnx"
+
 class Rembg:
-    # TODO: finish preferneces and about section
     def __init__(self, page: ft.Page):
         self.page = page
         self.page.title = "rembg"
@@ -267,10 +268,14 @@ class Rembg:
         self.b64_outi = base64.b64encode(buffer.getvalue()).decode()
         self.extra()
 
+    def on_textbox_change(self, e):
+        mango = e.control.value
+        self.name = mango
     def extra(self):
         # look at that indentation!
         self.img_cons = [ft.ListTile(title=ft.TextField(label="Filename", 
                                      value=self.name,
+                                     on_change=self.on_textbox_change
                                      ),
                                      trailing=ft.PopupMenuButton(
                                         icon=ft.Icons.MORE_VERT,

@@ -9,4 +9,7 @@ dist/
 
 storage/
 assets/
+
 .venv
+.jar
+bundletool.jar
