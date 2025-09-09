@@ -11,5 +11,6 @@ storage/
 assets/
 
 .venv
+venv
 .jar
 bundletool.jar
